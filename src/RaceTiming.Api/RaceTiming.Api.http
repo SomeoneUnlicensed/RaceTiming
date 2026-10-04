@@ -1,0 +1,31 @@
+@RaceTiming.Api_HostAddress = http://localhost:5009
+
+GET {{RaceTiming.Api_HostAddress}}/api/results/1
+Accept: application/json
+
+###
+
+POST {{RaceTiming.Api_HostAddress}}/api/checkpoints/pass
+Content-Type: application/json
+
+{
+  "eventId": 1,
+  "participantNumber": 1103,
+  "checkpoint": "start",
+  "timestamp": "2026-10-04T10:00:03Z"
+}
+
+###
+
+POST {{RaceTiming.Api_HostAddress}}/api/checkpoints/batch
+Content-Type: application/json
+
+{
+  "eventId": 1,
+  "passes": [
+    { "participantNumber": 1103, "checkpoint": "5km", "timestamp": "2026-10-04T10:27:00Z" },
+    { "participantNumber": 1103, "checkpoint": "5km", "timestamp": "2026-10-04T10:27:00Z" }
+  ]
+}
+
+###
