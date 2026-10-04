@@ -1,5 +1,7 @@
 # RaceTiming
 
+[![CI](https://github.com/SomeoneUnlicensed/RaceTiming/actions/workflows/ci.yml/badge.svg)](https://github.com/SomeoneUnlicensed/RaceTiming/actions/workflows/ci.yml)
+
 Backend хронометража спортивного мероприятия: арки на трассе шлют события прохождения точек,
 API копит их и строит результат участника — без мгновенного `DNF` из-за одного опоздавшего
 или потерянного запроса.
@@ -16,10 +18,9 @@ API копит их и строит результат участника — б
 | `Finish` ещё нет, но окно результатов (`Event.ResultsCutoff` после `Event.StartTime`) не истекло | `Unknown` |
 | `Finish` нет, и окно истекло | `Dnf` |
 
-Если `FINISH` всё же придёт позже (арка отправила его с задержкой) — статус пересчитывается
-в `Finished`, даже если дедлайн уже прошёл. Правило — чистая функция без побочных эффектов:
-[`ResultStatusCalculator`](src/RaceTiming.Api/Services/ResultStatusCalculator.cs), покрыта
-отдельными unit-тестами на каждый край условия, включая «поздний финиш переопределяет DNF».
+Если `FINISH` придёт позже с задержкой, статус пересчитывается в `Finished`, даже если дедлайн
+уже прошёл. Правило — чистая функция [`ResultStatusCalculator`](src/RaceTiming.Api/Services/ResultStatusCalculator.cs),
+покрыта unit-тестами на все граничные случаи.
 
 ## Идемпотентность
 
@@ -36,11 +37,9 @@ API копит их и строит результат участника — б
 «арка потеряла связь, затем прислала 500 результатов разом». Внутри один `SaveChangesAsync`
 с `CancellationToken`, а не цикл с отдельным сохранением на каждую запись.
 
-`Task.WhenAll` в проекте используется осознанно и только там, где это безопасно: `DbContext`
-не потокобезопасен, поэтому запись в БД — строго последовательная операция одним
-`SaveChangesAsync`. Параллельно через `Task.WhenAll` выполняются независимые побочные эффекты
-*после* сохранения — [каналы уведомлений](src/RaceTiming.Api/Services/NotificationChannels.cs)
-(аудит-лог, инвалидация кэша результатов), ни один из которых не трогает `DbContext`.
+`DbContext` не потокобезопасен, поэтому запись в БД — один последовательный `SaveChangesAsync`.
+`Task.WhenAll` используется только после него, для независимых [каналов уведомлений](src/RaceTiming.Api/Services/NotificationChannels.cs)
+(аудит-лог, инвалидация кэша), которые с `DbContext` не работают.
 
 ## Эндпоинты
 
@@ -53,11 +52,9 @@ POST /api/checkpoints/pass                        # одно событие в �
 POST /api/checkpoints/batch                        # пачка событий (burst-загрузка)
 ```
 
-Из ТЗ сознательно объединены в один `POST /api/checkpoints/batch` два пересекающихся
-эндпоинта (`/api/checkpoints/events` и `/api/checkpoints/{id}/batch`): у реальной арки есть
-собственное имя чекпоинта, но нет нашего внутреннего `id`, а сам батч логически принадлежит
-одному событию, а не одной точке трассы — так что `eventId` разумнее указывать один раз в
-теле запроса, а не дублировать в каждой из тысячи записей.
+Два пересекающихся batch-эндпоинта из ТЗ (`/api/checkpoints/events` и `/api/checkpoints/{id}/batch`)
+объединены в один `POST /api/checkpoints/batch`: арка знает своё имя чекпоинта, но не наш
+внутренний `id`, а батч принадлежит событию, а не отдельной точке трассы.
 
 Пример запроса на точку прохода:
 
@@ -97,11 +94,10 @@ GET /api/results/1
 dotnet run --project src/RaceTiming.Api
 ```
 
-Swagger UI: `http://localhost:5009/swagger`. При первом запуске база (SQLite-файл,
-`racetiming.db`) создаётся миграциями и наполняется демо-данными одного события с тремя
-участниками — см. [`DbInitializer`](src/RaceTiming.Api/Data/DbInitializer.cs). Время старта
-события привязано к моменту запуска, так что сценарий «участник ещё не финишировал, но это
-ещё не DNF» воспроизводится при каждом запуске, а не только в день, когда писался код.
+Swagger UI: `http://localhost:5009/swagger`. При первом запуске база (SQLite-файл
+`racetiming.db`) создаётся миграциями и наполняется демо-данными — см.
+[`DbInitializer`](src/RaceTiming.Api/Data/DbInitializer.cs). Старт события привязан к моменту
+запуска, поэтому сценарий `Unknown` воспроизводится при каждом запуске.
 
 ## Тесты
 

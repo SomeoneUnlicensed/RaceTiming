@@ -2,11 +2,8 @@ using RaceTiming.Api.Domain;
 
 namespace RaceTiming.Api.Services;
 
-/// <summary>
-/// Decides a participant's race status from the splits recorded so far. Pure and
-/// deterministic on purpose — no DB, no clock side effects — so it is cheap to unit test
-/// the one rule that actually matters here: a missing FINISH is not instant DNF.
-/// </summary>
+/// <summary>Decides a participant's status from splits recorded so far. Pure function,
+/// no DB access, for easy unit testing.</summary>
 public static class ResultStatusCalculator
 {
     public static ParticipantStatus Calculate(

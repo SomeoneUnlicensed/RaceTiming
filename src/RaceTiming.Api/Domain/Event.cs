@@ -6,10 +6,7 @@ public class Event
     public string Name { get; set; } = string.Empty;
     public DateTimeOffset StartTime { get; set; }
 
-    /// <summary>
-    /// How long after StartTime a participant without a FINISH pass is considered DNF.
-    /// Before this elapses, their status is reported as Unknown, not DNF.
-    /// </summary>
+    /// <summary>How long after StartTime a participant without FINISH becomes Dnf.</summary>
     public TimeSpan ResultsCutoff { get; set; } = TimeSpan.FromHours(6);
 
     public List<Participant> Participants { get; set; } = [];

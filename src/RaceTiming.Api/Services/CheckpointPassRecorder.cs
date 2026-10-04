@@ -31,9 +31,7 @@ public class CheckpointPassRecorder(
             .Where(c => c.EventId == eventId)
             .ToDictionaryAsync(c => c.Name, StringComparer.OrdinalIgnoreCase, cancellationToken);
 
-        // One query for every (participant, checkpoint) pair touched by this batch, instead
-        // of one existence check per entry — this is what makes a 1000-row burst upload
-        // cheap, and it's what idempotency actually hinges on: skip anything already stored.
+        // One query for every (participant, checkpoint) pair touched, not one per entry.
         var touchedParticipantIds = entries
             .Select(e => participantsByBib.GetValueOrDefault(e.ParticipantNumber)?.Id)
             .Where(id => id is not null)
@@ -93,8 +91,7 @@ public class CheckpointPassRecorder(
 
             var checkpointNameById = checkpointsByName.Values.ToDictionary(c => c.Id, c => c.Name);
 
-            // Each channel is independent and owns no shared, non-thread-safe state (unlike
-            // the DbContext above), so firing them concurrently is actually safe here.
+            // Safe to run concurrently: channels don't touch the DbContext.
             await Task.WhenAll(toInsert.Select(pass => Task.WhenAll(notificationChannels.Select(channel =>
                 channel.NotifyAsync(eventId, pass.ParticipantId, checkpointNameById[pass.CheckpointId], cancellationToken)))));
         }

@@ -9,10 +9,7 @@ namespace RaceTiming.Api.Controllers;
 [Route("api/participants")]
 public class ParticipantsController(RaceTimingDbContext db) : ControllerBase
 {
-    /// <summary>
-    /// Bib numbers are only unique within one event, so when more than one event has the
-    /// same bib in play, pass ?eventId= to disambiguate; otherwise the first match wins.
-    /// </summary>
+    /// <summary>Bib numbers are only unique per event; pass ?eventId= to disambiguate.</summary>
     [HttpGet("{bibNumber:int}")]
     public async Task<ActionResult<ParticipantDto>> GetByBibNumber(
         int bibNumber, [FromQuery] int? eventId, CancellationToken cancellationToken)

@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace RaceTiming.Api.Middleware;
 
-/// <summary>Maps domain exceptions to RFC 7807 problem responses instead of leaking a 500
-/// with a stack trace for things that are really just "not found".</summary>
+/// <summary>Maps domain exceptions to RFC 7807 problem responses.</summary>
 public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context)

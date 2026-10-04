@@ -6,13 +6,12 @@ public record EventDto(int Id, string Name, DateTimeOffset StartTime, TimeSpan R
 
 public record ParticipantDto(int Id, int BibNumber, string Name, int EventId);
 
-/// <summary>Payload shape straight from an arch: it knows a participant's bib and its own
-/// checkpoint name, never our internal database ids. EventId disambiguates — every event
-/// has its own "finish" checkpoint, so the name alone isn't globally unique.</summary>
+/// <summary>Identifies a checkpoint by name, as an arch reports it — never our internal id.
+/// EventId is required since checkpoint names repeat across events (every event has a
+/// "finish").</summary>
 public record CheckpointPassRequest(int EventId, int ParticipantNumber, string Checkpoint, DateTimeOffset Timestamp);
 
-/// <summary>One reading within a batch upload. EventId lives on the envelope, not here,
-/// since a single arch burst-uploading 1000 reads belongs to one event.</summary>
+/// <summary>One reading in a batch; EventId lives on the envelope instead.</summary>
 public record CheckpointPassEntry(int ParticipantNumber, string Checkpoint, DateTimeOffset Timestamp);
 
 public record BatchCheckpointPassRequest(int EventId, List<CheckpointPassEntry> Passes);

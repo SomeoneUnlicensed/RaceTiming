@@ -16,8 +16,7 @@ public class CheckpointIdempotencyTests : IClassFixture<RaceTimingApiFactory>
     [Fact]
     public async Task SamePassSubmittedTwice_IsRecordedOnce()
     {
-        // Bib 1103 (Alex) has no seeded passes, and this timestamp is unique to this test —
-        // keeps this test's assertions independent of the demo data seeded at startup.
+        // Bib 1103 (Alex) has no seeded passes, so this stays independent of seed data.
         var request = new CheckpointPassRequest(EventId: 1, ParticipantNumber: 1103, Checkpoint: "start",
             Timestamp: DateTimeOffset.Parse("2026-10-04T10:00:03Z"));
 
@@ -38,14 +37,12 @@ public class CheckpointIdempotencyTests : IClassFixture<RaceTimingApiFactory>
     [Fact]
     public async Task BatchContainingDuplicateOfAnAlreadyStoredRead_DoesNotDoubleRecordIt()
     {
-        // Bib 1077 (Maria) already has seeded "start"/"5km" passes, so this test uses her
-        // "10km" split instead — a combination nothing else in this fixture touches.
+        // Maria already has seeded "start"/"5km" passes, so use her "10km" split instead.
         var timestamp = DateTimeOffset.Parse("2026-10-04T10:50:00Z");
         var alreadyStored = new CheckpointPassRequest(1, 1077, "10km", timestamp);
         await _client.PostAsJsonAsync("/api/checkpoints/pass", alreadyStored);
 
-        // The arch reconnects and replays a burst that re-includes the read above twice,
-        // plus one genuinely new read for a different participant.
+        // Replayed burst: the read above twice, plus one genuinely new read.
         var batch = new BatchCheckpointPassRequest(1,
         [
             new CheckpointPassEntry(1077, "10km", timestamp),

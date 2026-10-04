@@ -39,8 +39,7 @@ public class RaceTimingDbContext(DbContextOptions<RaceTimingDbContext> options) 
 
         modelBuilder.Entity<CheckpointPass>(e =>
         {
-            // Enforces idempotency at the storage layer: the same arch reading replayed
-            // twice (dropped ack, retried batch upload) can never be persisted twice.
+            // Idempotency at the storage layer: a replayed read can never persist twice.
             e.HasIndex(x => new { x.ParticipantId, x.CheckpointId, x.Timestamp }).IsUnique();
             e.HasOne(x => x.Participant)
                 .WithMany(x => x.Passes)

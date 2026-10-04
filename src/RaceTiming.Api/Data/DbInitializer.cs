@@ -12,9 +12,7 @@ public static class DbInitializer
             return;
         }
 
-        // Anchored to "now" rather than a fixed calendar date, so the seeded scenario keeps
-        // demonstrating the thing it's meant to show — Maria and Alex sitting at Unknown,
-        // not DNF — no matter when this project is actually cloned and run.
+        // Anchored to "now" so Maria/Alex still land in the Unknown window on any run date.
         var startTime = DateTimeOffset.UtcNow.AddHours(-1);
 
         var raceEvent = new Event
@@ -42,18 +40,17 @@ public static class DbInitializer
 
         var passes = new List<CheckpointPass>
         {
-            // Ivan: full set of splits, already finished ~20 minutes ago.
+            // Ivan: full set of splits, finished.
             Pass(ivan, startCp, At(TimeSpan.FromMinutes(0))),
             Pass(ivan, fiveKm, At(TimeSpan.FromMinutes(24))),
             Pass(ivan, tenKm, At(TimeSpan.FromMinutes(49))),
             Pass(ivan, finish, At(TimeSpan.FromMinutes(61))),
 
-            // Maria: started and has one split, but no FINISH yet — still within the
-            // 6-hour results window, so she must read as Unknown, not DNF.
+            // Maria: no FINISH yet, still within the cutoff.
             Pass(maria, startCp, At(TimeSpan.FromSeconds(5))),
             Pass(maria, fiveKm, At(TimeSpan.FromMinutes(26))),
 
-            // Alex: never even reported a START read from the arch — also Unknown.
+            // Alex: no reads at all yet.
         };
 
         db.CheckpointPasses.AddRange(passes);

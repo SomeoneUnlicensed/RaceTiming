@@ -66,8 +66,7 @@ public class ResultStatusCalculatorTests
     [Fact]
     public void LateFinishArrivingAfterCutoff_StillOverridesDnf()
     {
-        // This is the scenario from the brief: a delayed arch read for FINISH shows up
-        // after the cutoff has technically passed. It must still resolve to Finished.
+        // A delayed FINISH read arriving after cutoff must still resolve to Finished.
         var now = EventStart + Cutoff + TimeSpan.FromHours(1);
         var passes = new[] { new CheckpointPass { Checkpoint = FinishCheckpoint, Timestamp = EventStart.AddHours(1) } };
 

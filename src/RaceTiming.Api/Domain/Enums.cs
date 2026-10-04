@@ -7,12 +7,8 @@ public enum CheckpointType
     Finish
 }
 
-/// <summary>
-/// Unknown is the default for anyone without a FINISH pass while the event's results
-/// window is still open — DNF is only assigned once <see cref="Event.ResultsCutoff"/>
-/// has elapsed since <see cref="Event.StartTime"/>. This is the core business rule:
-/// a single missed/delayed checkpoint read must never read as DNF.
-/// </summary>
+/// <summary>Unknown applies until <see cref="Event.ResultsCutoff"/> elapses after
+/// <see cref="Event.StartTime"/> with no FINISH recorded; only then does it become Dnf.</summary>
 public enum ParticipantStatus
 {
     Unknown,

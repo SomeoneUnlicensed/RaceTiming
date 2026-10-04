@@ -8,11 +8,7 @@ using RaceTiming.Api.Data;
 
 namespace RaceTiming.Tests;
 
-/// <summary>
-/// Boots the real app (real middleware, real controllers, real migrations) against a
-/// private in-memory SQLite connection per test class instance, instead of the file-based
-/// one from appsettings — so tests are isolated and leave nothing on disk.
-/// </summary>
+/// <summary>Boots the real app against a private in-memory SQLite connection.</summary>
 public class RaceTimingApiFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection = new("DataSource=:memory:");

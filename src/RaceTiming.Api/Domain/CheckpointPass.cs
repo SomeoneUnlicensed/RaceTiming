@@ -1,10 +1,7 @@
 namespace RaceTiming.Api.Domain;
 
-/// <summary>
-/// One timing read from an arch/checkpoint. The natural key (ParticipantId, CheckpointId,
-/// Timestamp) has a unique index — see <see cref="Data.RaceTimingDbContext"/> — so the same
-/// arch event replayed twice (lost connection, retried batch) never double-records.
-/// </summary>
+/// <summary>One timing read from a checkpoint arch. (ParticipantId, CheckpointId, Timestamp)
+/// has a unique index in <see cref="Data.RaceTimingDbContext"/>.</summary>
 public class CheckpointPass
 {
     public long Id { get; set; }
@@ -15,9 +12,9 @@ public class CheckpointPass
     public int CheckpointId { get; set; }
     public Checkpoint? Checkpoint { get; set; }
 
-    /// <summary>When the participant actually passed the checkpoint, reported by the arch.</summary>
+    /// <summary>When the participant passed, as reported by the arch.</summary>
     public DateTimeOffset Timestamp { get; set; }
 
-    /// <summary>When our system actually received and stored this read — can lag Timestamp.</summary>
+    /// <summary>When the system stored this read; can lag <see cref="Timestamp"/>.</summary>
     public DateTimeOffset ReceivedAt { get; set; }
 }
